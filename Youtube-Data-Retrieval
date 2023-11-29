@@ -1,0 +1,121 @@
+from googleapiclient.discovery import build
+import numpy as np
+import pandas as pd
+
+api_key = ''
+
+youtube = build('youtube', 'v3', developerKey=api_key)
+
+# Channel Statistics part
+'''
+request = youtube.channels().list(
+    part='statistics',
+    id = 'UCCezIgC97PvUuR4_gbFUs5g'
+)
+
+response = request.execute()
+'''
+
+l = 0
+set_id = 7
+
+channel_ids = ['UCYwn6G1x1caJ8jrzM6sMNSQ', 'UCfHiyEd9rRmgNw8CZXghqgA', 'UC9lJ4_ySNS747d1LFbEbBPQ', 'UCmsPCwaYx-sHiLCmC_wKjHQ', 'UCRdRXprAw3CveSpkVJ4_UYA', 'UC8bIvhWL8Ue4HV5DYaFxvwQ', 'UC9UhQLrdvwjEoIzK1RGzVxQ', 'UCb9z5839Dw5JuD2soXEDy7g', 'UCRwLVaHfm5P62OfLrCAAn2w', 'UC_uFFcNZ0aHdoV4b0LHPyXw', 'UCPTHFyvxAfHbhmTIGgHveRg', 'UCpyGEuj2V_abrbJBmbl3gCw', 'UCiSUYrkEvyjGwOyqn1DKT6w', 'UCmejeQVijLZADnl_b0ZcRbA', 'UCeDiMzJEUbPgaruDcXnD4Cg', 'UCqdG1lLuPNvZUXGK3EkvSBw', 'UCZr51CeBbllHP8TApZKws_g', 'UCPHOucR3Lps52Bv7zqCejBA', 'UCFpI4b_m-449cePVasc2_8g', 'UC7KPQY72e330Hntv9HoexxA', 'UCYtW8rJugCKqhUyG4rGi8sw', 'UCGMtz9RPUAKe1CwhZdVsI8Q', 'UCnlAofwg9QyCkLmLxWLgzBA', 'UC1pi_ersAjIcrj7Ekq-VcVg', 'UCUjmUxiuaj-30KRjNmxoFdg', 'UCwVt_pYnsoi6EzwzD65znug', 'UCHsfpAFgw5arUBQbUwWw7TQ', 'UCxEAVlPbzj0hAsChrchZlVQ', 'UC_QIfHvN9auy2CoOdSfMWDw', 'UC7R7yj9aRHRUDEKKnXLeOKw', 'UCVg_QAZOqwhBiosWyIlx8TA', 'UCxVAJFHwLAuW6oKf-2awU-w', 'UCke-eovtpSuvVm_i5mrAd0w', 'UCyeNS4A0zrLE2Bs4Pvy-wkA', 'UC2gfIEmHVp918hvJXfrDTog', 'UCIJUnnSSi_nDbbWyXoT3jJg', 'UCA7Hp3GUzB-oOr6kf6qJIuA', 'UCUi79dukrJAJAmsGypI8cJg', 'UCX-d9sbjhTWdlxcVG3aK7dQ', 'UCi1ceJwrYiDq9MXKZUu9_vg', 'UCT7aiCHgDM-knR4E-UBBvgA', 'UCebUVW128BFnl45R9lZx2Dw', 'UCUApLedsVgFq2TA9iIdqFeQ', 'UC7_2x12qZvCpHNnvR-OynwQ', 'UCg_-yOl9OG1puQ8TkAKKbjQ', 'UCOtQCJMkhhR5p71J4fkyRQg', 'UChBEbMKI1eCcejTtmI32UEw', 'UC3XTzVzaHQEd30rQbuvCtTQ', 'UCP5tjEmvPItGyLhmjdwP7Ww', 'UCUuvZ0skL2WYZ3rhPMZbfdA', 'UCfpCQ89W9wjkHc8J_6eTbBg', 'UCVRm2Ho8cL3lvWDyp2ayuFw', 'UC8-Th83bH_thdKZDJCrn88g', 'UC5zrlRzhT_cFI9zT6uQSijg', 'UCDogdKl7t7NHzQ95aEwkdMw', 'UCIEv3lZ_tNXHzL3ox-_uUGQ', 'UCUsN5ZwHx2kILm84-jPDeXw', 'UChiwLDIBJrV5SxqdixMHmQA', 'UC_IpSl6O_-IRAA6fiNs05Gg']
+country_table=[]
+country_meta=[]
+channel_ids_done = []
+
+for x in channel_ids:
+    if x in channel_ids_done:
+        continue
+    channel_ids_done.append(x)
+    print('Channel ID:', x)
+    request = youtube.channels().list(
+        part='statistics, status, snippet, brandingSettings',
+        id = x)
+
+    response = request.execute()
+    for item in response['items']:
+        try:
+            abc = item['snippet']['country']
+        except:
+            abc = None
+        try:
+            xyz = item['status']['madeForKids']
+        except:
+            xyz = None
+        country_table.append(
+            {
+                'Channel Id': item['id'],
+                'Channel Name': item['snippet']['title'],
+                'Subscriber Count': item['statistics']['subscriberCount'],
+                'View Count': item['statistics']['viewCount'],
+                'Video Count': item['statistics']['videoCount'],
+                'Country': abc,
+                'Made For Kids': xyz
+            })
+
+        try:
+            br_keywords = item['brandingSettings']['channel']['keywords']
+        except:
+            br_keywords = None
+        country_meta.append(
+            {
+                'Channel Id': item['id'],
+                'Description': item['snippet']['description'],
+                'Channel Creation Date': item['snippet']['publishedAt'],
+                'Country': abc,
+                'Privacy Status': item['status']['privacyStatus'],
+                'Keywords': br_keywords
+            }
+        )
+
+df1 = pd.DataFrame(country_table)
+df2 = pd.DataFrame(country_meta)
+
+df1.to_csv(f'Channel_Table{set_id}.csv')
+df2.to_csv(f'Channel_Meta_Table{set_id}.csv')
+
+
+videos_table = []
+video_ids = ['EX_s6PDTtqU', 'W9oINEmMkGQ', 'drljqpQCrXQ', '_h_7lhIS4E4', 'AuNiI_KgaRI', '5CeBkMMScEc', 'OcURO_Fe-NY', 'pFbaTdtxDsw', 'Z9UGRsD9BGc', 'XBOlE6PZxZQ', 't61KU6WkOfo', 'jOcx0sJYn1Y', 'VncDKn1d4zw', '7U0eo3F29i0', 'O8ZuhbEdUKg', 'RjUIF_sbwG4', 'FEAwG8_Ulo4', 'CmEcqg91F68', 'Sx2iHutB48U', '0tZH_0Lvtkg', '1mDGFiRRp88', 'nHIA_oyu-fE', '2S4MEsncb9U', 'o67UyxUOC6E', 'SmvUaq39USo', '4q4A04qEpF0', 'ed1SBQNBVFk', 'bKrYaT6GiHI', 'VgOmPPEL1RI', 'pdH9KtG8wzw', 'VKpGk4CQE0I', 'pdnG3gs1HH0', 'BPPPuY3rHYk', '7gtMQ4HtZ_E', 'LDcLAgchXgA', 'ftvFtuPOBdQ', 'dNug00EvoVg', 'AWdkNttxFaI', 'Qci3W8hTcY8', '9r9WdNXBO-s', 'mUe6Tce3VBk', 'uBEpxPSfTO8', 'MfCzmVW41wo', 'JvLFIf7aXmk', 'kMZSMnob5rw', '5FYXRiRD3mY', 'w1LQxsipYsc', 'sckas-gGCrY', 'j-tIET-RnSg', 'ycAgmJg4FLQ', 's11GGH8p9ME', 'JcGd6G5KGj8', 'ARHBPg6mg3A', 'Z6B8BJQGqTQ', '4E0bTLaouU8', 'VKaCgwzlM20', 'WxBsvbW09R8', 'oinpA_6KI-Q', 'gJMfjgH_nHA', 'hQhm1JxUiGQ', '3A5_Hq2gMiU', 'cYb0Z30D7oo', 'i9MEVQnAgdM', 'bISeLNlpbzY', 'AAq4QUF1adY', 'D0SKVvKOtXw', '1k-NB7ez4IA', '8YeULOqm1TU', 'fb69o1m_gNY', '18kpKF8o1_A', 'K93q4OlLinI', 'TG8GDcjSrhA', 'v7XuHa6jwtE', 'Qdr1TuXfDBY', '18kpKF8o1_A', 'K93q4OlLinI', 'nMW1J9LoXb4', 'bKcokVyT6J8', '6FT1kpeoFdM', 'cTMvl0M7B3c', 'KL2vXHFHs_E', 'J8HndsKESpM', 'BD11Lfc-pak', '18kpKF8o1_A', 'Zylqy3YNNwM', 'tLAxYP4ZZrU', '3oR5lOi8tNU', 'PjLYl1GdIyk', 'jVd1tWYEJHk', 'PCUS3yeND9c','gczBgNB-p1w','tOOPrBWIwBQ','1aEImx74gLA','3B3EgW5zvKU','Tsmqrk7Wgsk','myxojwq22-Q','wUjfWwqFcFI','srSuX08b5nw','O9sABRosdNg', 'T5SYu8tyKjM','pn-W0DVQw8Y','hJxaVD6eAtc','n76noIAaAuY','qNnHS62uDHQ','ovnvh8jwhEI','7oJ_pIaSRtQ','ydbMAFaA6Uw','4wORLNNsZc8','PDTCgxvmShc', '7y1xJAVZxXg','DnpO_RTSNmQ','xecEV4dSAXE','XEVlyP4_11M','s6MwGeOm8iI','J5b_-TZwQ0I','7VG_s2PCH_c','wD8AwgO0AQI','oDPCmmZifE8','vU8dCYocuyI', 'GE-lAftuQgc','E39GIysMevQ','Iy7NzjCmUf0','hOFRbjjjwCE','9mVRc80vhhQ','lPNrtjboISg','OQ9zng2S810','If61baWF4GE','3bifbg12u28','fs1CIrwg5zU', 'bjk0RMjQpcY','asynnXWJzxo','eZlqNb-eqe8','QT7NB3W8Qvo','kZvE6ESK_wI','3crQ09q5Jco','5p-B51FKEps','D0M_kCdCJzw','UuQxctEQhLA','Nqh-1P615CE', '138djJZRkdY','J-sMBdJyclo','wcDFgir_jgY','rPAhFD8hKxQ','GbZiI9pOjN8','_h9OdSiW52U','w7nBJegBk8Q','U908K7lMXpk','LSGnt74q8X8','ELmtrn0krCU', 'jvnXRqMRLSw','QdAQcCtY6GY','aw6LGABJySE','SIeDVXSkCKY','89VJaoEwvkE','Lrjln8ZGsbU','xB-DIJjHxus','JWTwkwoqHK4','vh7ETsTkQmM','_C73ZZkFiUM', 'ZTLAx3VDX7g','ss9ygQqqL2Q','OPdbdjctx2I','aKdV5FvXLuI','CbjxifMCNeg','4iQxG8ZjYO8','NaY91YjVbEM','cLmCJKT5ssw','uD2nOjV3AaI','0uBOtQOO70Y', 'vsjUqXWv-zI','FtDxjVCu56E','2Ha9GJwlus8','mk-lRsrj9Eg','AeWE_FaIP6k','WT0JEsII6ZI','yjpYzFtxfjU','JiQz58Y67To','6lv0vAWbj74','ocju4Y23j0M', '5NxKNrfqUjs','KF8I09WBtEI','ex1iFyfLUTM','aAOC71qqXxM','lz4R4FHFr90','M8tZaZPPWL8','rR7y4dyGvTk','zi6BQRG5xH0','B-gHb2gPGIs','fuVS2H6AYWE', 'QqLgmequ7Bk','88aDJFdUjH4','4NnJ-7Y6qwo','p6ff-ShY5Bw','9biIOtEYeHc','If2rE7Sagyw','ZJy1ajvMU1k','y5gnlPTXGB4','MpTodVRR73E','3tyYsfl4DlA', 'Dd7FixvoKBw','zB7MichlL1k','5LGEiIL1__s','gODZzSOelss','fcbj8BBsWSA','m1bLXk6UVts','LAOoF2gyQaA','kH6QJzmLYtw','naleynXS7yo','rtgY1q0J_TQ', 'yBrVN7OugFs','18oAkxwYQh0','QCI2KYhC8vk','TxU4pj8l3N4','vac6mJE8rqo','NqVLbDJxfbw','eivrK9xjRNg','YO4Pm-a7oZ4','xJZlhECK0Ps','hzDzv4NVlfE','AGBjI0x9VbM','t0Q2otsqC4I','cqyziA30whE','IC7kXsnYCWk','5oH9Nr3bKfw','5oH9Nr3bKfw','rilFfbm7j8k','1rTPX9mj9vU','bCtlituS9p8','16T0lvYHtkE','X7R-q9rsrtU']
+for x in video_ids:
+    print(x)
+    request = youtube.videos().list(
+        part='statistics, status, snippet, contentDetails',
+        id = x)
+
+    response = request.execute()
+    for item in response['items']:
+        try:
+            xyz = item['status']['madeForKids']
+        except:
+            xyz = None
+        try:
+            defAudio = item['snippet']['defaultAudioLanguage']
+        except:
+            defAudio = None
+        try:
+            comCount = item['statistics']['commentCount']
+        except:
+            comCount = None
+        try:
+            likeCount = item['statistics']['likeCount']
+        except:
+            likeCount = None
+        videos_table.append(
+            {
+                'Video Id': item['id'],
+                'View Count': item['statistics']['viewCount'],
+                'Like Count': likeCount,
+                'Comment Count': comCount,
+                'Video Duration': item['contentDetails']['duration'],
+                'Made For Kids': xyz,
+                'Channel Id': item['snippet']['channelId'],
+                'Video Title': item['snippet']['title'],
+                'Default Audio Language': defAudio,
+                'Published At': item['snippet']['publishedAt'],
+            }
+        )
+
+df4 = pd.DataFrame(videos_table)
+df4.to_csv(f'Videos_Table{set_id}.csv')
